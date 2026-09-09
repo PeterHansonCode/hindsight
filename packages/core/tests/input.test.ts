@@ -50,7 +50,7 @@ test('bounded reader accepts exact byte limit and rejects one byte over', async 
   await writeFile(path.join(root, 'over.json'), '{} ');
   const input = createInputReader(root, ['exact.json', 'over.json'], { maxFileBytes: 2 });
   assert.equal((await input.readJson('exact.json')).status, 'ok');
-  assert.deepEqual(await input.readJson('over.json'), { status: 'rejected', code: 'rejected_file' });
+  assert.deepEqual(await input.readJson('over.json'), { status: 'rejected', code: 'file_too_large' });
   assert.throws(() => createInputReader(root, [], { maxFileBytes: 0 }), RangeError);
 });
 

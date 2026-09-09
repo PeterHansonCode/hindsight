@@ -25,7 +25,8 @@ export interface Diagnostic {
   row?: number; // One-based source row, when available.
   code: 'missing_file' | 'rejected_file' | 'invalid_json' | 'invalid_shape'
     | 'invalid_row' | 'invalid_encoding' | 'unsupported_file'
-    | 'invalid_url' | 'unmatched_placement' | 'ambiguous_join' | 'duplicate_caption';
+    | 'invalid_url' | 'unmatched_placement' | 'ambiguous_join' | 'duplicate_caption'
+    | 'empty_file' | 'file_too_large';
   severity: 'info' | 'warning' | 'error';
 }
 

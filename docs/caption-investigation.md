@@ -42,6 +42,8 @@ Every differing post has a different creator. The broader duplicate groups span 
 
 ## Selection decision
 
+First is longer in 23/31 pairs; additions such as hashtags and calls to action could weakly suggest a later version, not an earlier one, so export order must not be read as chronology: the justification is stable, deterministic selection, not presumed originality.
+
 Keep the first Caption in source order and mark captionSelection: first_in_export. This preserves the export's presentation order, agrees across matching saved/liked/collection representations, and avoids manufacturing a concatenated caption. It is often fuller (23/31) and sometimes looks revised, but neither fact proves first always means newest or best.
 
 Do not choose by length, inferred recency or content. Preserve all values and their order in captionValues so the display selection remains reversible. Do not call the selected caption latest or original. The ten-field Activity schema stays unchanged; variants remain Instagram-specific enrichment. Future adapters must make source-specific choices rather than inherit a first-means-newest assumption.

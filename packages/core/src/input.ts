@@ -1,5 +1,6 @@
 import { lstat, open, realpath } from 'node:fs/promises';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import type { ParserInput, ReadResult } from './domain.ts';
 
 export const DEFAULT_MAX_FILE_BYTES = 32 * 1024 * 1024;
@@ -22,7 +23,7 @@ function within(root: string, target: string): boolean {
 export function createInputReader(
   inputPath: string,
   declaredFiles: readonly string[],
-  options: { maxFileBytes?: number } = {},
+  options: { maxFileBytes?: number; onRead?: (source: { relativePath: string; sha256: string; sizeBytes: number }) => void } = {},
 ): ParserInput {
   const maxBytes = options.maxFileBytes ?? DEFAULT_MAX_FILE_BYTES;
   if (!Number.isSafeInteger(maxBytes) || maxBytes < 1 || maxBytes > DEFAULT_MAX_FILE_BYTES) {
@@ -51,7 +52,8 @@ export function createInputReader(
         const handle = await open(resolved, 'r');
         try {
           const stat = await handle.stat();
-          if (!stat.isFile() || stat.size > maxBytes || await realpath(target) !== resolved) {
+          if (stat.size > maxBytes) return { status: 'rejected', code: 'file_too_large' };
+          if (!stat.isFile() || await realpath(target) !== resolved) {
             return { status: 'rejected', code: 'rejected_file' };
           }
           const chunks: Buffer[] = [];
@@ -63,7 +65,7 @@ export function createInputReader(
             const { bytesRead } = await handle.read(chunk, 0, chunk.length, null);
             if (bytesRead === 0) break;
             size += bytesRead;
-            if (size > maxBytes) return { status: 'rejected', code: 'rejected_file' };
+            if (size > maxBytes) return { status: 'rejected', code: 'file_too_large' };
             chunks.push(chunk.subarray(0, bytesRead));
           }
           bytes = Buffer.concat(chunks, size);
@@ -76,6 +78,8 @@ export function createInputReader(
           ? { status: 'missing', code: 'missing_file' }
           : { status: 'rejected', code: 'rejected_file' };
       }
+      options.onRead?.({ relativePath, sha256: createHash('sha256').update(bytes).digest('hex'), sizeBytes: bytes.length });
+      if (bytes.length === 0) return { status: 'rejected', code: 'empty_file' };
       let text: string;
       try {
         text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
