@@ -8,6 +8,7 @@
 !/scripts/
 /scripts/*
 !/scripts/verify-instagram.ts
+!/scripts/verify-instagram-side-tables.ts
 !/.github/
 /.github/*
 !/.github/workflows/

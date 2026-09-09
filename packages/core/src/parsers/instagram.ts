@@ -1,4 +1,4 @@
-import type { Diagnostic, EventRecord, ParseResult, PlatformParser, SideTable } from '../domain.ts';
+import type { BufferedPlatformParser, Diagnostic, EventRecord, ParseResult, SideTable } from '../domain.ts';
 import { repairInstagramValues } from './instagram-encoding.ts';
 import { canonicalInstagramPostUrl } from './instagram-url.ts';
 
@@ -52,9 +52,9 @@ function postFields(values: Obj[]) {
   };
 }
 
-export const instagramParser: PlatformParser = {
+export const instagramParser: BufferedPlatformParser = {
   platform: 'instagram',
-  version: '0.2.0',
+  version: '0.3.0',
   sourceFiles: ['saved/saved_posts.json', 'likes/liked_posts.json',
     'saved/saved_collections.json', 'likes/liked_comments.json'],
   async parse(input): Promise<ParseResult> {
@@ -64,6 +64,7 @@ export const instagramParser: PlatformParser = {
     const collections: SideTable = { name: 'instagram.collections', schemaVersion: 1, rows: [] };
     const placements: SideTable = { name: 'instagram.placements', schemaVersion: 1, rows: [] };
     const savedByPost = new Map<string, string[]>();
+    const savedTimes = new Map<string, string>();
     let validFiles = 0;
     const report = (sourceFile: string, code: Diagnostic['code'], row?: number, severity: Diagnostic['severity'] = 'warning') => {
       diagnostics.push({ sourceFile, code, ...(row === undefined ? {} : { row }), severity });
@@ -117,11 +118,13 @@ export const instagramParser: PlatformParser = {
           } });
           extras.rows.push({ observationId, hashtags: fields.hashtags,
             post_type: canonical?.postType ?? null, postKey: canonical?.key ?? null,
-            captionPresent: fields.captionPresent, captionValues: fields.captions });
+            captionPresent: fields.captionPresent, captionValues: fields.captions,
+            captionSelection: 'first_in_export' });
           if (eventType === 'saved' && canonical) {
             const matching = savedByPost.get(canonical.key) ?? [];
             matching.push(observationId);
             savedByPost.set(canonical.key, matching);
+            savedTimes.set(observationId, time);
           }
         } catch {
           report(source, 'invalid_row', rowNumber);
@@ -156,9 +159,11 @@ export const instagramParser: PlatformParser = {
           // Each Media child is one placement; its nested owner URL is not.
           const placementId = `${collectionId}:${placementIndex + 1}`;
           let url: string | null = null;
+          let details: ReturnType<typeof postFields> | null = null;
           try {
             if (!object(child)) throw new Error('Invalid placement.');
             url = string(label(entries(child.dict), 'URL')?.value);
+            details = postFields(entries(child.dict));
           } catch {
             report(source, 'invalid_row', rowNumber);
           }
@@ -169,7 +174,13 @@ export const instagramParser: PlatformParser = {
             : matches.length > 1 ? 'ambiguous_join' : 'matched';
           if (joinStatus !== 'matched') report(source, joinStatus, rowNumber);
           placements.rows.push({ placementId, collectionId, postKey: canonical?.key ?? null,
-            url, savedObservationId: joinStatus === 'matched' ? matches[0] : null, joinStatus });
+            url, savedObservationId: joinStatus === 'matched' ? matches[0] : null, joinStatus,
+            candidateObservationIds: matches,
+            savedAt: joinStatus === 'matched' ? savedTimes.get(matches[0])! : null,
+            title: details?.title ?? null, captionValues: details?.captions ?? [],
+            captionSelection: 'first_in_export', creator: details?.creator ?? null,
+            creator_id: details?.creatorId ?? null, hashtags: details?.hashtags ?? [],
+            post_type: canonical?.postType ?? null });
         }
       } catch {
         report(source, 'invalid_row', rowNumber);

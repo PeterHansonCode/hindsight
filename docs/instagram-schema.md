@@ -84,7 +84,7 @@ Runtime validation exposed repeated immediate Caption labels; rejecting all repe
 | Exactly two Caption labels | 296 | 89 |
 | Exactly three Caption labels | 2 | 0 |
 
-Parser rule: Activity.title is the first Caption value in source order (empty becomes null). Preserve all caption values, including duplicates and alternatives, in post_extras.captionValues. Emit informational duplicate_caption diagnostics. Do not concatenate or discard the event. Missing Caption is distinct from an empty Caption for acceptance counting. This adds a measured detail to the earlier reference, without changing its event counts or field mapping.
+Parser rule: Activity.title is the first Caption value in source order (empty becomes null). Preserve all values, including duplicates and alternatives, in post_extras.captionValues and mark captionSelection as first_in_export, never latest/original. Emit informational duplicate_caption diagnostics. Do not concatenate or discard events. Missing Caption differs from an empty Caption for acceptance counting. See [caption investigation](caption-investigation.md): variants mostly resemble revisions rather than per-image structure, but the backend cause and edit order remain unknown.
 
 ## Liked comments and partial input
 

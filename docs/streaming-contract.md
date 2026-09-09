@@ -1,0 +1,13 @@
+# Incremental parsing contract — design only
+
+ParserInput retains readJson and now optionally exposes iterateJsonRecords(relativePath, options). Existing Instagram adapters and reader implementations remain valid. No streaming JSON reader, YouTube parser, or incremental ingestion coordinator is implemented in step 3.
+
+Options specify a path of object keys selecting an array ([] means a root array), maximum record bytes, maximum total bytes and optional AbortSignal. Never infer locale-dependent paths or use JavaScript expressions as selectors. Reader implementation must apply the same declared-path, containment, link, strict UTF-8 and content-free error rules as readJson. Total file size and per-record memory bounds are distinct. The 32 MiB whole-file limit is not the future streaming size limit.
+
+Async iteration supplies backpressure: reading advances as the consumer asks for the next record. Records carry a one-based row and unknown value, still requiring adapter runtime validation. Exactly one terminal end(recordCount) or missing/rejected result must occur. Invalid trailing JSON after valid records ends with rejection, not success. A consumer breaking early or aborting must close the underlying file in finally. An absent capability requires a clear unsupported-input result from the future adapter; it must not silently call readJson or raise its ceiling.
+
+Yielded records are provisional until valid end-of-file. A malformed file discovered after several yielded records must have all of its provisional contributions discarded. The future ingestion coordinator must stage records by source file and publish only validated sources. A thrown reader/adapter error or missing terminal marker also rejects unfinished work. Skipping one invalid record's structure is different from accepting malformed JSON syntax.
+
+PlatformParser also has optional parseIncrementally, yielding event, side_row and diagnostic emissions followed by a complete status. This prevents the existing ParseResult.events array from becoming an unavoidable memory bottleneck. The adapter must resolve late per-file rejection before announcing completion; a consumer must not publish provisional emissions. Side rows carry sourceFile for rollback attribution. Later storage/aggregation must consume with backpressure and bounded state, including external sorting or indexed joins where necessary. Implementing just an input iterator would not deliver a bounded-memory pipeline.
+
+Instagram continues using parse/readJson today. No claims about YouTube memory consumption or streaming throughput have been tested. A synthetic iterator contract test verifies lazy consumption and cancellation semantics for a stand-in implementation only; it is not a streaming-reader test.

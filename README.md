@@ -2,9 +2,9 @@
 
 A local-first tool for understanding activity recorded in your own platform exports. Event counts are facts; missing durations stay missing. Exports are snapshots, not complete account histories.
 
-## Current state: step 2
+## Current state: step 3
 
-Core now reads declared files from a hand-trimmed input directory and parses Instagram saved/liked events plus in-memory collections and placements. Strict encoding repair, URL matching, diagnostics and exact reference validation are implemented. Snapshot persistence, CSV/summary outputs, quarantine engine, report, wizard, MCP server and AI remain unimplemented.
+Core reads declared files from a hand-trimmed directory and parses Instagram saved/liked events, collections and placements. Strict encoding repair, URL matching, diagnostics and exact reference validation are implemented. Step 3 adds lossless persistence of the three side tables, scoped to a snapshot ID, with reference validation and no-overwrite retries. Full snapshot/event persistence, CSV/summary outputs, quarantine engine, report, wizard, MCP server and AI remain unimplemented. Optional streaming contracts exist; streaming itself is not implemented.
 
 ## Verify
 
@@ -25,6 +25,16 @@ npm run verify:instagram -- --input ..\hindsight-data\Instagram
 Every reference comparison prints observed, expected and PASS/FAIL; any mismatch exits 1. Missing arguments exit 2. The command is specific to this reference export, not a generic success test for arbitrary users' exports. It prints aggregates only, performs no writes, and says quarantine not_run. It is a developer command, not the eventual end-user interface.
 
 All 20 acceptance checks pass locally: 4,809 saves, 5,245 likes and the full collection/date/field table. The result is intentionally partial because seven placements have no saved match. All saved/liked events are retained. See [step 2 evidence](docs/step-2-validation.md). Offline tests use synthetic data only and check malformed input, encoding, URL rules, ambiguous joins, input boundaries and verifier failure behavior.
+
+Verify and persist the side-table slice outside the repo:
+
+```powershell
+npm run verify:instagram-side-tables -- --input ..\hindsight-data\Instagram --output ..\hindsight-data\step-3 --snapshot-id instagram-2026-08-30
+```
+
+This writes `instagram-2026-08-30.instagram-side-tables.json` in the selected output directory, reloads and validates it, and checks all source hashes. Fourteen checks pass; all 54 offline tests and typechecking pass locally. An identical retry is allowed; changed content under the same ID is rejected. The artifact contains personal captions and creator information: it is not a summary or a complete snapshot. Unmatched placements retain post details with a null saved link and timestamp, described only as unmatched in this snapshot. See [step 3 evidence](docs/step-3-validation.md).
+
+The [caption investigation](docs/caption-investigation.md) found differences consistent with revisions, without evidence of per-image structure or reliable edit ordering. Selection remains first in export, with all variants preserved. The [streaming contract](docs/streaming-contract.md) permits future incremental input and output; it does not claim a streaming implementation or bounded-memory YouTube support today.
 
 Installation downloads development dependencies. After installation, typechecking and tests run locally without network access, API keys, accounts, or models. CI uses synthetic fixtures only.
 

@@ -1,17 +1,17 @@
 # HINDSIGHT build contract
 
-Approved scope: core plus the Instagram adapter, delivered in small reviewable steps. Step 1 was approved; stop after step 2 for the user's review before persistence integration. The other four packages contain specifications only.
+Approved scope: core plus the Instagram adapter, delivered in small reviewable steps. Steps 1 and 2 were accepted. Stop after step 3's side-table integration for review before step 4. The other four packages contain specifications only.
 
 ## Delivery steps
 
 1. Relocate private data outside the repo, establish private GitHub repository, README, deny-by-default Git exclusions, contracts, synthetic fixtures and offline scaffold checks.
 2. Implement bounded declared-file reading, URL canonicalisation, string repair, saved/liked parsing and collection interpretation necessary to reproduce the ENTIRE acceptance table. A developer script takes an explicit input path and prints observed, expected and PASS/FAIL per line. Any mismatch exits nonzero. Do not defer collection counts to step 3 and still call step 2 complete.
-3. Complete persistent side-table integration for post extras, collections and placements, preserving unmatched and ambiguous joins.
+3. Complete persistent side-table integration for post extras, collections and placements, preserving unmatched and ambiguous joins. Investigate captions, permit future streaming in the contract without implementing it, and check actual GitHub visibility before pushing. Persist a standalone snapshot-scoped side-table bundle, not the full snapshot/event store.
 4. Persist versioned snapshots and generate aggregates and outputs; test failure handling. No report UI or executable packaging yet.
 
 ## Runtime boundaries
 
-Only local filesystem data enters ingestion. No network calls, telemetry, servers, accounts or AI in core. Parsers receive an injected readJson capability returning unknown data; no writes, output paths, network clients or snapshot management. Runtime shape validation is mandatory. Adding a platform requires one adapter module supplied to the generic ingest function; core must not branch on platform-specific fields.
+Only local filesystem data enters ingestion. No network calls, telemetry, servers, accounts or AI in core. Parsers receive injected readJson and optional iterateJsonRecords capabilities returning unknown data; no writes, output paths, network clients or snapshot management. Runtime shape validation is mandatory. Adding a platform requires one adapter module supplied to the future generic ingest function; generic ingestion must not branch on platform-specific fields. Streaming implementation is deferred; see streaming-contract.md.
 
 Input must be an explicitly selected hand-trimmed directory in this release. Read only adapter-declared relative paths, reject traversal, absolute paths and links escaping the input boundary. Start with a 32 MiB per-file limit enforced during reading, not just a preliminary stat. Parse one whole JSON file at a time. Measure peak process memory against the real fixture; do not equate the byte limit with peak RAM. Missing files and malformed files produce clear diagnostics and allow valid independent files to continue. No valid supported events must be explicit, never silent success.
 
@@ -25,7 +25,7 @@ Each snapshot has independent identity, import time, optional supplied export da
 
 Store one immutable versioned JSON/JSONL directory per snapshot outside the source directory. Stage writes and publish only complete snapshots; failed writes must not replace an existing snapshot. CSV is derived, not the authoritative store. Outputs initially describe one selected snapshot. Never sum overlapping exports or overwrite old snapshots. Later diffing uses absence language: present in one export, absent in another; do not infer the cause. Encourage keeping older exports.
 
-Instagram side tables: post extras (observation reference, hashtags, post_type); collections (snapshot-local collection identity, name, creation/update timestamps); placements (collection reference, canonical post identity, optional saved observation reference). Multiple placements must not create multiple saved events. Unmatched placement links remain null, without invented event dates. A collection timestamp belongs to the collection, not its posts.
+Instagram side tables: post extras (observation reference, hashtags, post_type, ordered caption variants and selection provenance); collections (snapshot-local collection identity, name, creation/update timestamps); placements (collection reference, canonical identity, optional saved observation reference, candidate IDs and observed post details). Multiple placements must not create multiple saved events. Unmatched links and savedAt remain null. Matched savedAt comes from the referenced saved event only. A collection timestamp belongs to the collection, not its posts. Persisted references are scoped by bundle.snapshotId; user-facing wording is Unmatched in this snapshot.
 
 ## URL and encoding rules
 

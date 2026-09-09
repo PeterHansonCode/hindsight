@@ -1,6 +1,6 @@
 # Threat model — initial specification
 
-This is a design document with partial implementation evidence. Step 2 implements declared-file reads, size bounds, link/path rejection, strict decoding, structural validation and content-free diagnostics. The quarantine engine and downstream CSV/report/MCP defenses remain specifications.
+This is a design document with partial implementation evidence. Core implements declared-file reads, size bounds, link/path rejection, strict decoding, structural validation and content-free diagnostics. Step 3 adds validated side-table references, source-tree write rejection and no-overwrite publication. The quarantine engine and downstream CSV/report/MCP defenses remain specifications.
 
 Assets: original exports, third-party content and identifiers, local snapshots, derived summaries, filesystem integrity and repository history. Inputs can be malformed, oversized, unexpectedly shaped or deliberately hostile. An export being officially downloaded does not make its captions trusted.
 

@@ -35,7 +35,25 @@ export type ReadResult =
 
 export interface ParserInput {
   readJson(relativePath: string): Promise<ReadResult>;
+  // Optional capability: absence must be handled explicitly, never by silently
+  // buffering an oversized file through readJson. Not implemented yet.
+  iterateJsonRecords?(
+    relativePath: string,
+    options: JsonRecordOptions,
+  ): AsyncIterable<JsonRecordRead>;
 }
+
+export interface JsonRecordOptions {
+  recordPath: readonly string[]; // [] = root array; keys select a nested array.
+  maxRecordBytes: number;
+  maxTotalBytes: number; // Separate from readJson's 32 MiB materialisation limit.
+  signal?: AbortSignal;
+}
+
+export type JsonRecordRead =
+  | { status: 'record'; row: number; value: unknown }
+  | { status: 'end'; recordCount: number }
+  | { status: 'missing' | 'rejected'; code: Diagnostic['code'] };
 
 export type DataValue = string | number | boolean | null | DataValue[]
   | { [key: string]: DataValue };
@@ -53,12 +71,31 @@ export interface ParseResult {
   diagnostics: Diagnostic[];
 }
 
-export interface PlatformParser {
+interface ParserDescriptor {
   readonly platform: Platform;
   readonly version: string;
   readonly sourceFiles: readonly string[];
-  parse(input: ParserInput): Promise<ParseResult>;
 }
+
+export interface BufferedPlatformParser extends ParserDescriptor {
+  parse(input: ParserInput): Promise<ParseResult>;
+  // Future large adapters may emit incrementally too. Merely streaming input
+  // would not solve memory use if all normalised events accumulated in arrays.
+  parseIncrementally?(input: ParserInput): AsyncIterable<ParserEmission>;
+}
+
+export interface IncrementalPlatformParser extends ParserDescriptor {
+  parseIncrementally(input: ParserInput): AsyncIterable<ParserEmission>;
+  parse?(input: ParserInput): Promise<ParseResult>;
+}
+
+export type PlatformParser = BufferedPlatformParser | IncrementalPlatformParser;
+
+export type ParserEmission =
+  | { type: 'event'; record: EventRecord }
+  | { type: 'side_row'; sourceFile: string; tableName: string; schemaVersion: number; row: Record<string, DataValue> }
+  | { type: 'diagnostic'; diagnostic: Diagnostic }
+  | { type: 'complete'; status: ParseResult['status'] };
 
 export interface SnapshotManifest {
   snapshotId: string;
