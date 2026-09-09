@@ -5,6 +5,9 @@
 !/package.json
 !/package-lock.json
 !/tsconfig.json
+!/scripts/
+/scripts/*
+!/scripts/verify-instagram.ts
 !/.github/
 /.github/*
 !/.github/workflows/

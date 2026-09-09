@@ -10,3 +10,6 @@
 - Generate two aggregate summaries by default. Removing all creator identity would defeat the user's intended assistant-assisted analysis. Disclosure labels inform the user's choice; HINDSIGHT never uploads the files.
 - Source export relocation was explicitly requested before repository creation. Future ingestion never moves or modifies sources; quarantine may delete only disposable working-copy files.
 - Step 2's full acceptance table requires collection interpretation. Move that parsing work forward while keeping persistence integration in step 3.
+- Repeated Caption labels exist in the reference data. Select the first in source order for the unified title, retain every value in post extras, and emit an informational diagnostic. Do not treat repetition as a malformed event or concatenate alternative captions.
+- Observation IDs are deterministic source-file/row references local to one parse. The later snapshot layer must scope them to its snapshot ID; event keys omit source positions so reordering does not change matching identity.
+- Parse status partial includes unmatched placements even when acceptance passes. Acceptance means matching the measured export; complete would incorrectly conceal known gaps.

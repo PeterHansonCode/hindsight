@@ -1,6 +1,6 @@
 # Threat model — initial specification
 
-This is a design document, not a claim that security controls are implemented. Step 1 contains contracts and synthetic scaffold checks only.
+This is a design document with partial implementation evidence. Step 2 implements declared-file reads, size bounds, link/path rejection, strict decoding, structural validation and content-free diagnostics. The quarantine engine and downstream CSV/report/MCP defenses remain specifications.
 
 Assets: original exports, third-party content and identifiers, local snapshots, derived summaries, filesystem integrity and repository history. Inputs can be malformed, oversized, unexpectedly shaped or deliberately hostile. An export being officially downloaded does not make its captions trusted.
 
@@ -16,4 +16,4 @@ Assets: original exports, third-party content and identifiers, local snapshots, 
 | Interest disclosure through summaries | Detailed file labelled personal; anonymous distributions labelled low disclosure. Neither guarantees anonymity or safety; no automatic uploading. |
 | Misleading historical claims | Snapshot-scoped counts; absence language; first/last observed, never completeness or inferred causes. |
 
-The later security package will define the full PII taxonomy and an adversarial CI gate. Repository and type checks today are not that gate. Local filesystem permissions and compromised host software are outside the protection provided by parser interfaces.
+The later security package will define the full PII taxonomy and a broader adversarial CI gate. Current synthetic tests include path/junction rejection and malicious text, but are not the full security gate. Local filesystem permissions and compromised host software are outside the protection provided by parser interfaces. The reader rejects all descendant links; its path checks are not a sandbox against hostile concurrent directory replacement. The user-selected input tree must not be modified during reading.

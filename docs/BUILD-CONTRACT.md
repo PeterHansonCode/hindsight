@@ -1,6 +1,6 @@
 # HINDSIGHT build contract
 
-Approved scope: core plus the Instagram adapter, delivered in small reviewable steps. Stop after step 1 for the user's review. The other four packages contain specifications only.
+Approved scope: core plus the Instagram adapter, delivered in small reviewable steps. Step 1 was approved; stop after step 2 for the user's review before persistence integration. The other four packages contain specifications only.
 
 ## Delivery steps
 
@@ -31,7 +31,7 @@ Instagram side tables: post extras (observation reference, hashtags, post_type);
 
 See instagram-schema.md for observed URL evidence. Proposed Instagram identity is instagram:post:<case-sensitive shortcode>. Accept only HTTPS instagram.com or www.instagram.com, no credentials or non-default port, and exactly /reel/<shortcode>, /p/<shortcode> or /tv/<shortcode>, with optional trailing slash. Shortcodes contain ASCII letters, digits, underscore or hyphen. Discard query and fragment for identity; preserve the decoded original URL in Activity. Reject extra segments, encoded separators and lookalike hosts. Path type remains a separate observed attribute. Do not make network requests to resolve URLs. Cross-path equivalence is a documented identity rule, not an observed variation in this fixture. Report ambiguous collisions instead of silently choosing a saved row.
 
-Step 2 must test trailing-slash, query/fragment, path-type equivalence, case-sensitive shortcode differences, malformed URL, unsafe scheme, userinfo, lookalike host and duplicate-match cases. Step 1 supplies labelled synthetic cases; no canonicaliser is implemented yet.
+Step 2 tests trailing-slash, query/fragment, path-type equivalence, case-sensitive shortcode differences, malformed URL, unsafe scheme, userinfo, lookalike host and duplicate-match cases. The canonicaliser and regression tests are implemented. Repeated Caption labels use the first value for title and retain all values in post extras; see the measured schema correction.
 
 Apply documented Latin-1 to UTF-8 repair once to every Instagram string value, including nested values. Guard byte representability and strict UTF-8 validity; Buffer.toString does not throw on all corrupt byte sequences. Preserve/report unexpected encoding rather than silently inserting replacement characters. Preserve typographic apostrophes and emoji; repair is not transliteration.
 

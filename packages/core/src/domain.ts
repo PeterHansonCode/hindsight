@@ -3,7 +3,7 @@ export type EventType = 'saved' | 'liked' | 'watched' | 'searched' | 'commented'
 
 export interface Activity {
   platform: Platform;
-  timestamp: string; // ISO 8601 UTC; validated at runtime by the future parser.
+  timestamp: string; // ISO 8601 UTC; validated at runtime by the parser.
   event_type: EventType;
   title: string | null;
   creator: string | null;
@@ -25,7 +25,7 @@ export interface Diagnostic {
   row?: number; // One-based source row, when available.
   code: 'missing_file' | 'rejected_file' | 'invalid_json' | 'invalid_shape'
     | 'invalid_row' | 'invalid_encoding' | 'unsupported_file'
-    | 'invalid_url' | 'unmatched_placement' | 'ambiguous_join';
+    | 'invalid_url' | 'unmatched_placement' | 'ambiguous_join' | 'duplicate_caption';
   severity: 'info' | 'warning' | 'error';
 }
 

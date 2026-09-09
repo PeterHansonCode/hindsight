@@ -55,7 +55,7 @@ Collection posts have no activity timestamp. Join to saved observations by valid
 | Other value | 0 |
 | timestamp_value present and integer | 73 |
 
-Rule: value may be ABSENT or the string "None"; always read timestamp_value. The planning reference documents the string "None" form; the supplied export uses absence. Do not claim the older form was independently rechecked. Collection update time is not an individual post's saved time.
+Rule: value may be ABSENT or the string "None"; always read timestamp_value. The user confirmed that the string "None" form came from the August 9 export; the supplied August 30 export uses absence. The older file was not independently rechecked in this session. Collection update time is not an individual post's saved time.
 
 ## URL observations and canonical identity
 
@@ -70,7 +70,21 @@ Rule: value may be ABSENT or the string "None"; always read timestamp_value. The
 
 Across all 14,231 URLs, zero shortcodes appear under multiple path types. The fixture provides no evidence of cross-path variation, tracking parameters or slash differences. All seven unmatched placements stay unmatched using the shortcode alone.
 
-Proposed canonical identity: instagram:post:<shortcode>, case-sensitive. Validate the HTTPS Instagram host and two-segment supported path before extracting; accept optional trailing slash, ignore query/fragment for identity, reject credentials, non-default ports, malformed paths and encoded path separators. Preserve original decoded URL and observed post_type (reel, p or tv). Treat cross-type paths sharing a shortcode as equivalent by explicit design; synthetic tests must cover this assumption and ambiguous joins. No URL fetching or inferred case folding.
+Implemented canonical identity: instagram:post:<shortcode>, case-sensitive. Validate the HTTPS Instagram host and two-segment supported path before extracting; accept optional trailing slash, ignore query/fragment for identity, reject credentials, non-default ports, malformed paths and encoded path separators. Preserve original decoded URL and observed post_type (reel, p or tv). Treat cross-type paths sharing a shortcode as equivalent by explicit design; synthetic tests cover this assumption and ambiguous joins. No URL fetching or inferred case folding. Shortcode matching was attempted on August 30 and did not reduce the seven unmatched placements.
+
+## Step 2 finding: repeated Caption labels
+
+Runtime validation exposed repeated immediate Caption labels; rejecting all repeated labels discarded valid events. A targeted read-only check on August 30 found:
+
+| Metric | Saved | Liked |
+|---|---:|---:|
+| Rows with repeated Caption labels | 298 | 89 |
+| All repeated values identical | 274 | 82 |
+| Repeated values differ | 24 | 7 |
+| Exactly two Caption labels | 296 | 89 |
+| Exactly three Caption labels | 2 | 0 |
+
+Parser rule: Activity.title is the first Caption value in source order (empty becomes null). Preserve all caption values, including duplicates and alternatives, in post_extras.captionValues. Emit informational duplicate_caption diagnostics. Do not concatenate or discard the event. Missing Caption is distinct from an empty Caption for acceptance counting. This adds a measured detail to the earlier reference, without changing its event counts or field mapping.
 
 ## Liked comments and partial input
 
