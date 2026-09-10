@@ -33,7 +33,9 @@ export function parseReport(result: ParseResult): string {
     'No time spent was estimated. Keep older exports so their observations remain available.', '');
   const extras = result.sideTables.find(table => table.name === 'instagram.post_extras')?.rows ?? [];
   const missingCaptions = extras.filter(row => row.captionPresent === false).length;
-  if (missingCaptions) lines.push(`${missingCaptions} items had no caption. These items were kept, with an empty title.`, '');
+  if (missingCaptions) lines.push(missingCaptions === 1
+    ? '1 item had no caption. This item was kept, with an empty title.'
+    : `${missingCaptions} items had no caption. These items were kept, with an empty title.`, '');
   const groups = new Map<string, { diagnostic: Diagnostic; count: number }>();
   for (const diagnostic of result.diagnostics) {
     const key = JSON.stringify([diagnostic.sourceFile, diagnostic.code, diagnostic.severity]);

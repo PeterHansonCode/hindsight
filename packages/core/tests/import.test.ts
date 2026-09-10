@@ -98,7 +98,15 @@ test('both summary files and CSVs are created, without captions or URLs in summa
   for (const text of [anonymousText, detailedText]) {
     assert.ok(!text.includes('Synthetic café')); assert.ok(!text.includes('https://')); assert.ok(!text.includes('safe to share'));
   }
-  for (const text of ['synthetic_creator', 'Synthetic Créator', 'SyntheticA', 'creator_id', 'source_file', 'snapshotId']) assert.ok(!anonymousText.includes(text));
+  for (const text of ['synthetic_creator', 'Synthetic Créator', 'SyntheticA']) assert.ok(!anonymousText.includes(text));
+  const forbiddenKeys = new Set(['creator', 'creator_id', 'creators', 'name', 'id', 'raw_id', 'caption', 'title', 'url', 'source_file', 'snapshotId']);
+  function checkFields(value: unknown): void {
+    if (Array.isArray(value)) { value.forEach(checkFields); return; }
+    if (value !== null && typeof value === 'object') for (const [key, child] of Object.entries(value)) {
+      assert.ok(!forbiddenKeys.has(key), `Unexpected personal field: ${key}`); checkFields(child);
+    }
+  }
+  checkFields(anonymous);
   const csv = readCsv(await fs.readFile(path.join(env.destination, 'activity.csv'), 'utf8'));
   assert.equal(csv.length, 4); assert.equal(csv[0].length, 10);
   assert.deepEqual(csv.slice(1).map(row => row[1]), [...csv.slice(1).map(row => row[1])].sort());
@@ -114,7 +122,7 @@ test('both summary files and CSVs are created, without captions or URLs in summa
     assert.equal(source.sizeBytes, bytes.length);
   }
   const report = await fs.readFile(path.join(env.destination, 'parse-report.txt'), 'utf8');
-  assert.match(report, /1 items had no caption\. These items were kept/);
+  assert.match(report, /1 item had no caption\. This item was kept/);
   assert.ok(!report.includes('unmatched_placement')); assert.match(report, /unmatched in this snapshot/);
   assert.match(await fs.readFile(path.join(env.destination, 'quarantine.log'), 'utf8'), /Quarantine did not run/);
 });
@@ -122,6 +130,34 @@ test('both summary files and CSVs are created, without captions or URLs in summa
 test('missing input folder produces a clear message and nonzero process exit', async t => {
   const env = await setup(t), result = run(path.join(env.root, 'missing'), env.output);
   assert.equal(result.status, 1); assert.match(result.stderr, /input folder was not found/); await absent(env.output);
+});
+
+test('anonymous summary contains no names, IDs, captions or URLs when source identities are replaced with canaries', async t => {
+  const env = await setup(t);
+  assert.equal(run(env.input, env.output, 'before').status, 0);
+  const before = await fs.readFile(path.join(env.output, 'before', 'summary-anonymous.json'), 'utf8');
+  for (const file of [saved, liked]) {
+    const rows = env.fixture.files[file];
+    for (const row of rows) {
+      row.fbid = 'POST_ID_CANARY_8291';
+      row.label_values.find((field: { label?: string }) => field.label === 'URL').value = 'https://www.instagram.com/reel/URL_CANARY_8291/';
+      const caption = row.label_values.find((field: { label?: string }) => field.label === 'Caption');
+      if (caption) caption.value = 'CAPTION_CANARY_8291';
+      const owner = row.label_values.find((field: { title?: string }) => field.title === 'Owner').dict[0].dict;
+      owner.find((field: { label?: string }) => field.label === 'Name').value = 'NAME_CANARY_8291';
+      owner.find((field: { label?: string }) => field.label === 'Username').value = 'CREATOR_ID_CANARY_8291';
+    }
+    await fs.writeFile(path.join(env.input, file), JSON.stringify(rows));
+  }
+  assert.equal(run(env.input, env.output, 'after').status, 0);
+  const after = await fs.readFile(path.join(env.output, 'after', 'summary-anonymous.json'), 'utf8');
+  assert.equal(after, before); // Identity/content changes must not change any anonymous field.
+  assert.ok(!after.includes('CANARY_8291')); assert.ok(!after.includes('https://'));
+  const personal = await fs.readFile(path.join(env.output, 'after', 'summary-detailed.json'), 'utf8');
+  assert.ok(personal.includes('NAME_CANARY_8291')); assert.ok(personal.includes('CREATOR_ID_CANARY_8291'));
+  assert.ok(!personal.includes('CAPTION_CANARY_8291')); assert.ok(!personal.includes('URL_CANARY_8291'));
+  const csv = await fs.readFile(path.join(env.output, 'after', 'activity.csv'), 'utf8');
+  for (const prefix of ['NAME', 'CREATOR_ID', 'POST_ID', 'CAPTION', 'URL']) assert.ok(csv.includes(`${prefix}_CANARY_8291`));
 });
 
 for (const file of [saved, liked, collections, comments]) {
@@ -186,7 +222,7 @@ test('write failure mid-snapshot publishes nothing and preserves an earlier comp
   const env = await setup(t); assert.equal(run(env.input, env.output, 'earlier').status, 0);
   const original = fs.open;
   t.mock.method(fs, 'open', async (...args: Parameters<typeof fs.open>) => {
-    if (String(args[0]).endsWith(`${path.sep}creators.csv`)) throw Object.assign(new Error('PRIVATE_CANARY'), { code: 'ENOSPC' });
+    if (args[1] === 'wx' && String(args[0]).endsWith(`${path.sep}creators.csv`)) throw Object.assign(new Error('PRIVATE_CANARY'), { code: 'ENOSPC' });
     return original(...args);
   });
   const errors: string[] = [];

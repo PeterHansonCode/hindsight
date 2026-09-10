@@ -2,9 +2,19 @@
 
 A local-first tool for understanding activity recorded in your own platform exports. Event counts are facts; missing durations stay missing. Exports are snapshots, not complete account histories.
 
-## Current state: step 3
+## Current state: step 4
 
-Core reads declared files from a hand-trimmed directory and parses Instagram saved/liked events, collections and placements. Strict encoding repair, URL matching, diagnostics and exact reference validation are implemented. Step 3 adds lossless persistence of the three side tables, scoped to a snapshot ID, with reference validation and no-overwrite retries. Full snapshot/event persistence, CSV/summary outputs, quarantine engine, report, wizard, MCP server and AI remain unimplemented. Optional streaming contracts exist; streaming itself is not implemented.
+Core parses hand-trimmed Instagram exports and writes a complete local snapshot: activity and creator CSVs, both aggregate summaries, a plain-English parse report, a truthful quarantine log, observations, side tables and a checksum manifest. Files are staged before publication; old snapshots are never overwritten. Quarantine engine, HTML report, wizard, MCP server, AI, ERAS and YouTube remain unimplemented. Streaming contracts exist; streaming itself does not.
+
+Generate all outputs from an explicitly selected folder:
+
+```powershell
+npm run import:instagram -- --input ..\hindsight-data\Instagram --output ..\hindsight-data\step-4 --export-date 2026-08-30
+```
+
+This creates a fresh snapshot subfolder under --output and prints its location. The export date is optional supplied provenance; it is never inferred from the newest activity. Use --snapshot-id for an explicit name; existing names are rejected, not overwritten. Use another --output location as needed. Documents/Hindsight is deferred to the future CLI package.
+
+Typechecking and all 79 offline tests pass locally, including CSV formula injection, all eight requested failure paths and anonymous-summary disclosure tests. The real export passes the earlier 20 parser and 14 side-table checks. Its four primary outputs contain 10,054 activity rows, 5,308 creator rows and matching summary counts. See [step 4 validation](docs/step-4-validation.md).
 
 ## Verify
 
@@ -32,7 +42,7 @@ Verify and persist the side-table slice outside the repo:
 npm run verify:instagram-side-tables -- --input ..\hindsight-data\Instagram --output ..\hindsight-data\step-3 --snapshot-id instagram-2026-08-30
 ```
 
-This writes `instagram-2026-08-30.instagram-side-tables.json` in the selected output directory, reloads and validates it, and checks all source hashes. Fourteen checks pass; all 54 offline tests and typechecking pass locally. An identical retry is allowed; changed content under the same ID is rejected. The artifact contains personal captions and creator information: it is not a summary or a complete snapshot. Unmatched placements retain post details with a null saved link and timestamp, described only as unmatched in this snapshot. See [step 3 evidence](docs/step-3-validation.md).
+This earlier side-table-only command writes `instagram-2026-08-30.instagram-side-tables.json`, reloads it and checks source hashes. Fourteen checks still pass. An identical retry is allowed for this standalone artifact; changed content under the same ID is rejected. Full snapshot imports use the separate command above and reject existing IDs. Unmatched placements retain post details with a null saved link and timestamp. See [step 3 evidence](docs/step-3-validation.md).
 
 The [caption investigation](docs/caption-investigation.md) found differences consistent with revisions, without evidence of per-image structure or reliable edit ordering. Selection remains first in export, with all variants preserved. The [streaming contract](docs/streaming-contract.md) permits future incremental input and output; it does not claim a streaming implementation or bounded-memory YouTube support today.
 
@@ -46,6 +56,8 @@ The real Instagram fixture was moved outside this repository to `../hindsight-da
 
 Never commit personal exports or derived outputs. Root content is ignored by default; only approved source, documentation, and synthetic fixtures are eligible. Git ignore rules cannot prevent a forced add. Review staged contents before every push. `private: true` prevents npm publication; remote repository privacy is a separate GitHub setting.
 
-Planned outputs include `activity.csv`, `creators.csv`, `summary-anonymous.json`, `summary-detailed.json`, `quarantine.log`, and `parse-report.txt`. Anonymous summaries are **low disclosure**, not anonymous guarantees. Detailed summaries carry `"sensitivity": "personal"`: they reveal interests, beliefs and affiliations; share only with a party you would tell those things to directly. No HINDSIGHT component uploads either file.
+Every successful import writes `activity.csv`, `creators.csv`, `summary-anonymous.json`, `summary-detailed.json`, `quarantine.log`, and `parse-report.txt`, plus internal snapshot files. Anonymous summaries are **low disclosure**, not anonymity guarantees. Detailed summaries carry `"sensitivity": "personal"` and a warning about interests, beliefs and affiliations. No HINDSIGHT component uploads either file.
+
+Available activity is kept when other files are missing or damaged; the report explains the partial result and the command exits 0. An empty valid export also succeeds, with empty outputs. Missing input folders, no usable data due to errors, and output-write failures exit 1 with plain-English messages. Incorrect command arguments exit 2. Caption absence never causes an otherwise valid event to be skipped. Developer commands currently require a terminal; the later packaged interface will not.
 
 See [build contract](docs/BUILD-CONTRACT.md), [measured schema](docs/instagram-schema.md), [decisions](docs/decisions.md), and [threat model](docs/threat-model.md).

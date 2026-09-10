@@ -1,13 +1,13 @@
 # HINDSIGHT build contract
 
-Approved scope: core plus the Instagram adapter, delivered in small reviewable steps. Steps 1 and 2 were accepted. Stop after step 3's side-table integration for review before step 4. The other four packages contain specifications only.
+Approved scope: core plus the Instagram adapter, delivered in small reviewable steps. Steps 1–3 were accepted. Finish and stop after step 4's outputs and failure-path validation for review. The other four packages contain specifications only. After approval, prove ERAS against Instagram before adding YouTube; do not start either in this step.
 
 ## Delivery steps
 
 1. Relocate private data outside the repo, establish private GitHub repository, README, deny-by-default Git exclusions, contracts, synthetic fixtures and offline scaffold checks.
 2. Implement bounded declared-file reading, URL canonicalisation, string repair, saved/liked parsing and collection interpretation necessary to reproduce the ENTIRE acceptance table. A developer script takes an explicit input path and prints observed, expected and PASS/FAIL per line. Any mismatch exits nonzero. Do not defer collection counts to step 3 and still call step 2 complete.
 3. Complete persistent side-table integration for post extras, collections and placements, preserving unmatched and ambiguous joins. Investigate captions, permit future streaming in the contract without implementing it, and check actual GitHub visibility before pushing. Persist a standalone snapshot-scoped side-table bundle, not the full snapshot/event store.
-4. Persist versioned snapshots and generate aggregates and outputs; test failure handling. No report UI or executable packaging yet.
+4. Persist versioned snapshots and generate both CSVs, both summaries, parse-report.txt and quarantine.log by default. Test CSV formula injection in written files, anonymous-summary disclosure and all eight requested failure paths. Keep --output configurable. Record real-export evidence in step-4-validation.md and stop. No report UI or executable packaging yet.
 
 ## Runtime boundaries
 
