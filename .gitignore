@@ -10,6 +10,11 @@
 !/scripts/verify-instagram.ts
 !/scripts/verify-instagram-side-tables.ts
 !/scripts/import-instagram.ts
+!/scripts/explore-instagram.ts
+!/scripts/analyze-instagram.ts
+!/scripts/build-report.ts
+!/scripts/propose-folder-split.ts
+!/scripts/audit-hashtags.ts
 !/.github/
 /.github/*
 !/.github/workflows/
@@ -35,6 +40,9 @@
 /packages/mcp-server/*
 !/packages/security/README.md
 !/packages/report/README.md
+!/packages/report/report.js
+!/packages/report/report.css
+!/packages/report/annotations.js
 !/packages/cli/README.md
 !/packages/mcp-server/README.md
 /packages/core/src/**

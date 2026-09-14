@@ -93,3 +93,7 @@ likes/liked_comments.json is an object with root key likes_comment_likes, not an
 ## Historical interpretation
 
 The planning comparison records 174 liked and 63 saved items absent from the later snapshot, with 82 liked and 487 saved items newly present. These figures do not establish why records disappeared. Keep old exports; say present in one export and absent in another. Never imply a complete lifetime history or label observed timestamps first ever.
+
+## Topic coverage constraint from the accepted exploration
+
+Collections are not whole-history topic labels: 67/73 retained folders were created in 2026, including 30 in January; 4,047/4,809 saves are from 2026, and 90.96% of 2025 saves have no matched placement. The dense current-folder-labelled window is roughly December 2025–August 2026. Earlier likes support creator and partially covered hashtag evidence instead. Current membership is not historical membership, and creation is not filing time. Save timestamps date saving, not content publication or viewing. The schema therefore cannot identify publication-time trends or why something was saved.

@@ -1,14 +1,15 @@
-# Report — specification only
+# Browser memory aid and report
 
-One self-contained local HTML file; no network assets, telemetry or AI. Escape third-party text and validate links. Missing platforms and insufficient data yield explicit limited sections. All claims are scoped to retained exports.
+Primary step-8 delivery: a single downloadable self-contained HTML application, not a disk-only report generator. One portable engine feeds this browser shell and the later CLI/MCP shells. The application starts empty, accepts user-selected local files/ZIP entries, processes permitted payloads offline and renders an in-memory model. Saving a personal HTML/data/annotation bundle is explicit; no assumption of filesystem paths, Documents/Hindsight, overwrite rights or durable file-origin browser storage.
 
-1. THE OPENING: one plainly stated event count.
-2. THE ERAS: weekly creator matrix, composition distance between adjacent windows, statistical changepoints, labels from creators over-represented versus baseline, merge short eras. Document distance, window size, minimum support and timezone; handle sparse periods without inventing phases. No implementation or tuned parameters yet.
-3. THE CONSTANTS: creators recurring across eras.
-4. THE NUMBERS: counts by platform/year/month; duration only where measured and labelled.
-5. THE BUBBLE: creator diversity over time, descriptively labelled, with sample-size limits.
-6. NEW vs REPEAT: newly observed versus previously observed creators, not inferred rewatches.
-7. FIRST OBSERVED & LAST OBSERVED: explicitly within retained exports.
-8. THE CALENDAR: local display timezone selected explicitly, UTC storage retained; no assumed locale parsing.
+Canonical contracts: [browser and annotations](../../docs/browser-and-annotations.md), [lifecycles and bursts](../../docs/lifecycles-and-bursts.md), [threat model](../../docs/threat-model.md).
 
-Separate explicit share step produces a redacted card with eras, shapes and counts, no creator names or captions. This is separate from both default summary files; neither summary is called safe to share. No moralising language.
+The tool supplies evidence; the user supplies meaning. Optional dated points/periods with uncertain bounds and plain-text notes belong to the user. Separate them visually and in storage from platform observations. A chart-selected annotation is retrospective context, not automatically held-out ground truth.
+
+Display overlapping SVG swimlanes for creator/current-topic intervals, source/coverage detail and user annotations. Rank by sustained active months/weeks/sessions, not raw-count winners. No percentile, normative comparison, goal/discrepancy score, moralising, automated narrative or failure framing. Use last recorded here. Technical legacy exploration tables are not the UI template.
+
+Collections supply dense current labels roughly December 2025–August 2026, not historical topics: 67/73 folders were created in 2026, 4,047/4,809 saves are from 2026 and 90.96% of 2025 saves are unfiled. Earlier likes show creator records and incompletely covered hashtags; never join those into a seamless topic timeline. Creation is not filing time; saving is not publication or viewing time, and save intention is not known.
+
+ZIP intake opens only permitted entry payloads, discloses metadata enumeration, enforces resource/path bounds and has untrimmed-export tests. A ZIP library is a justified evaluation candidate, not an installed dependency; a charting library is not needed. Workers help Instagram responsiveness too; streaming YouTube remains a later full-pipeline task. Bundle all assets/codecs/worker code locally; no external images, scripts or automatic requests. Treat captions, names, hashtags and annotations as untrusted text, including HTML/JSON embedding boundaries.
+
+Acceptance must demonstrate offline use, safe local save/import, cancellation, accessibility and Windows/macOS browser compatibility. The generated personal HTML report, SVG charts and annotation UI are implemented. ZIP intake and an empty standalone import application are not implemented. Synthetic localhost browser checks passed for the chart and annotation interactions; the user passed personal file:// offline use and print preview on Windows Chrome on 2026-09-11. The revised annotation save/re-import round trip remains pending. See [step-8 validation](../../docs/step-8-validation.md). The executable and quarantine are cancelled; no share-card or launch workflow is planned.

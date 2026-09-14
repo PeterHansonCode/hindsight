@@ -10,7 +10,12 @@
     "typecheck": "tsc --noEmit",
     "verify:instagram": "node scripts/verify-instagram.ts",
     "verify:instagram-side-tables": "node scripts/verify-instagram-side-tables.ts",
-    "import:instagram": "node scripts/import-instagram.ts"
+    "import:instagram": "node scripts/import-instagram.ts",
+    "explore:instagram": "node scripts/explore-instagram.ts",
+    "analyze:instagram": "node scripts/analyze-instagram.ts",
+    "audit:hashtags": "node scripts/audit-hashtags.ts",
+    "propose:folders": "node scripts/propose-folder-split.ts",
+    "build:report": "node scripts/build-report.ts"
   },
   "devDependencies": {
     "@types/node": "24.13.3",
